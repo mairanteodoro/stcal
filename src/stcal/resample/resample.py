@@ -223,7 +223,7 @@ class Resample:
         self.fillval = fillval
         self.good_bits = good_bits
 
-        if weight_type.startswith("ivm") or weight_type == "exptime":
+        if weight_type.startswith("ivm") or weight_type in ("exptime", "ivsky"):
             self.weight_type = weight_type
         else:
             raise ValueError("Unexpected weight type: '{self.weight_type}'")
@@ -964,9 +964,10 @@ class Resample:
             else:
                 mask = np.full_like(rn_var, False)
 
+            weight = np.ones(self.output_array_shape)
+
             # Set the weight for the image from the weight type
             if self.weight_type.startswith("ivm") and rn_var is not None:
-                weight = np.ones(self.output_array_shape)
                 weight[mask] = np.reciprocal(rn_var[mask])
 
             elif self.weight_type == "exptime":
