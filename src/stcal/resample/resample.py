@@ -111,11 +111,15 @@ class Resample:
             pixels with no contributions from input images will be set to this
             ``fillval`` value.
 
-        weight_type : {"ivm", "exptime"}, optional
+        weight_type : {"ivm", "exptime", "ivsky"}, optional
             The weighting type for adding models' data. For
             ``weight_type="ivm"`` (the default), the weighting will be
             determined per-pixel using the inverse of the read noise
             (VAR_RNOISE) array stored in each input image. If the
+            ``VAR_RNOISE`` array does not exist, the variance is set to 1 for
+            all pixels (i.e., equal weighting). If ``weight_type="ivm"``, 
+            the weighting will be determined per-pixel using the inverse of 
+            the sky variance (VAR_SKY) array stored in each input image. If the
             ``VAR_RNOISE`` array does not exist, the variance is set to 1 for
             all pixels (i.e., equal weighting). If ``weight_type="exptime"``,
             the weight will be set equal to the measurement time
