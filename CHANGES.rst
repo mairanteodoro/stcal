@@ -1,3 +1,94 @@
+1.15.0 (2025-08-14)
+===================
+
+Bug Fixes
+---------
+
+- Fix a bug in ``resample``, first introduced in
+  https://github.com/spacetelescope/jwst/pull/7894, due which the intensity of
+  resampled images was incorrectly adjusted to minimize the error in flux
+  computations while using an incorrect procedure. (`#352
+  <https://github.com/spacetelescope/stcal/issues/352>`_)
+
+
+General
+-------
+
+- test with latest version of Python (`#346
+  <https://github.com/spacetelescope/stcal/issues/346>`_)
+- For the likelihood algorithm for ramp fitting, use a separately downlinked
+  zeroframe if available, independent of the remaining first group data. (`#372
+  <https://github.com/spacetelescope/stcal/issues/372>`_)
+- Use ``gwcs.FITSImagingWCSTransform`` in the WCS of Level3 files. (`#378
+  <https://github.com/spacetelescope/stcal/issues/378>`_)
+- Add catalog timeout parameter from user-level funcs to utility funcs (`#384
+  <https://github.com/spacetelescope/stcal/issues/384>`_)
+- Add utility functions for calculating velocity aberration. (`#385
+  <https://github.com/spacetelescope/stcal/issues/385>`_)
+
+
+1.14.0 (2025-06-18)
+===================
+
+Bug Fixes
+---------
+
+- Scale drizzled errors and variances by the input-to-output pixel size ratio
+  to ensure proper error propagation for non-standard output pixel scales in
+  imaging mode.  Apply a similar scaling for spectroscopic modes, but using the
+  square root of the input-to-output pixel size ratio. (`#370
+  <https://github.com/spacetelescope/stcal/issues/370>`_)
+
+
+General
+-------
+
+- Allow resample to resample arbitrary variance arrays. (`#364
+  <https://github.com/spacetelescope/stcal/issues/364>`_)
+- Extrapolate dark reference integration to match or exceed number of science
+  file frames for cases when provided dark is not long enough to cover science
+  data. (`#368 <https://github.com/spacetelescope/stcal/issues/368>`_)
+
+
+1.13.0 (2025-05-12)
+===================
+
+Changes to API
+--------------
+
+- Added ``add_model_hook()`` method to ``resample.Resample`` that
+  allows subclasses to perform additional processing while
+  reusing quantities computed by ``add_model()``.
+
+
+  Modified the behavior of ``resample.utils.build_driz_weight()``: any
+  value of the ``weight_type`` argument other than "ivm", "exptime", or
+  ``None``
+  will raise a ``ValueError`` exception (previous behavior was to treat them
+  as ``None``). (`#342 <https://github.com/spacetelescope/stcal/issues/342>`_)
+
+
+Bug Fixes
+---------
+
+- Bugfix catalog parsing for tweakreg absolute refcat (`#355
+  <https://github.com/spacetelescope/stcal/issues/355>`_)
+- [saturation] Account for non-zero bias in group 2 saturation flagging in
+  frame-averaged groups. (`#356
+  <https://github.com/spacetelescope/stcal/issues/356>`_)
+
+
+General
+-------
+
+- Refactor Poisson variance calculation in ols_cas22/_ramp.pyx to use a
+  cumulative variable instead of a nested for loop, change some single
+  precision quantities in ols_cas22/_ramp.pyx to double precision. (`#325
+  <https://github.com/spacetelescope/stcal/issues/325>`_)
+- Removing old and unused OLS python and GLS code from ramp fitting. (`#358
+  <https://github.com/spacetelescope/stcal/issues/358>`_)
+
+
 1.12.0 (2025-03-18)
 ===================
 

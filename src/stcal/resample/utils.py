@@ -63,19 +63,6 @@ def build_mask(dqarr, good_bits, flag_name_map=None):
     )
     return dqmask
 
-    # if bitvalue is None:
-    #     return np.ones(dqarr.shape, dtype=np.uint8)
-    # return np.logical_not(np.bitwise_and(dqarr, ~bitvalue)).astype(np.uint8)
-
-    # bitvalue = interpret_bit_flags(bitvalue, mnemonic_map=pixel)
-
-    # if bitvalue is None:
-    #     return np.ones(dqarr.shape, dtype=np.uint8)
-
-    # bitvalue = np.array(bitvalue).astype(dqarr.dtype)
-    # return np.logical_not(np.bitwise_and(dqarr, ~bitvalue)).astype(np.uint8)
-
-
 def build_driz_weight(model, weight_type=None, good_bits=None, flag_name_map=None):
     """Create a weight map that is used for weighting input images when
     they are co-added to the ouput model.
@@ -85,16 +72,20 @@ def build_driz_weight(model, weight_type=None, good_bits=None, flag_name_map=Non
     model : dict
         Input model: a dictionary of relevant keywords and values.
 
-    weight_type : {"exptime", "ivm"}, optional
+    weight_type : {"exptime", "ivm"}, None, optional
         The weighting type for adding models' data. For
-        ``weight_type="ivm"`` (the default), the weighting will be
+        ``weight_type="ivm"``, the weighting will be
         determined per-pixel using the inverse of the read noise
         (VAR_RNOISE) array stored in each input image. If the
         ``VAR_RNOISE`` array does not exist,
         the variance is set to 1 for all pixels (i.e., equal weighting).
         If ``weight_type="exptime"``, the weight will be set equal
         to the measurement time when available and to
-        the exposure time otherwise.
+        the exposure time otherwise for pixels not flagged in the DQ array of
+        the model. The default value of `None` will
+        set weights to 1 for pixels not flagged in the DQ array of the model.
+        Pixels flagged as "bad" in the DQ array will have thier weights
+        set to 0.
 
     good_bits : int, str, None, optional
         An integer bit mask, `None`, a Python list of bit flags, a comma-,
@@ -137,7 +128,10 @@ def build_driz_weight(model, weight_type=None, good_bits=None, flag_name_map=Non
         result = inv_sky_variance * dqmask
 
     else:
-        result = np.ones(data.shape, dtype=data.dtype) * dqmask
+        raise ValueError(
+            f"Invalid weight type: {repr(weight_type)}."
+            "Allowed weight types are 'ivm', 'exptime', or None."
+        )
 
     return result.astype(np.float32)
 
@@ -243,7 +237,7 @@ def compute_mean_pixel_area(wcs, shape=None):
 
         limits = [ymin, xmax, ymax, xmin]
 
-        for j in range(4):
+        for _ in range(4):
             sl = [b, r, t, l][k]
             if not (np.all(np.isfinite(ra[sl])) and np.all(np.isfinite(dec[sl]))):
                 limits[k] += dxy[k]
@@ -267,6 +261,9 @@ def compute_mean_pixel_area(wcs, shape=None):
     if sky_area > 2 * np.pi:
         log.warning("Unexpectedly large computed sky area for an image. Setting area to: 4*Pi - area")
         sky_area = 4 * np.pi - sky_area
+    if image_area == 0:
+        log.error("Image area is zero; cannot compute pixel area.")
+        return None
     pix_area = sky_area / image_area
 
     return pix_area
@@ -346,9 +343,9 @@ def _get_boundary_points(xmin, xmax, ymin, ymax, dx=None, dy=None, shrink=0):  #
     nx = xmax - xmin + 1
     ny = ymax - ymin + 1
 
-    if dx is None:
+    if dx is None or dx <= 0:
         dx = nx
-    if dy is None:
+    if dy is None or dy <= 0:
         dy = ny
 
     if nx - 2 * shrink < 1 or ny - 2 * shrink < 1:
