@@ -63,6 +63,7 @@ def build_mask(dqarr, good_bits, flag_name_map=None):
     )
     return dqmask
 
+
 def build_driz_weight(model, weight_type=None, good_bits=None, flag_name_map=None):
     """Create a weight map that is used for weighting input images when
     they are co-added to the ouput model.
@@ -72,20 +73,21 @@ def build_driz_weight(model, weight_type=None, good_bits=None, flag_name_map=Non
     model : dict
         Input model: a dictionary of relevant keywords and values.
 
-    weight_type : {"exptime", "ivm"}, None, optional
-        The weighting type for adding models' data. For
-        ``weight_type="ivm"``, the weighting will be
-        determined per-pixel using the inverse of the read noise
-        (VAR_RNOISE) array stored in each input image. If the
-        ``VAR_RNOISE`` array does not exist,
-        the variance is set to 1 for all pixels (i.e., equal weighting).
-        If ``weight_type="exptime"``, the weight will be set equal
-        to the measurement time when available and to
+    weight_type : {"exptime", "ivm", "ivm-sky"}, optional
+        The weighting type for adding models' data. For ``weight_type="ivm"``
+        (the default), the weighting will be determined per-pixel using the
+        inverse of the read noise (VAR_RNOISE) array stored in each input
+        image. If ``weight_type="ivm-sky"``, then the weighting will be
+        determined by the inverse of the sky variance `VAR_SKY`. If the
+        ``VAR_RNOISE`` array does not exist, the variance is set to 1 for all
+        pixels (i.e., equal weighting). If ``weight_type="exptime"``, the
+        weight will be set equal to the measurement time when available and to
         the exposure time otherwise for pixels not flagged in the DQ array of
         the model. The default value of `None` will
         set weights to 1 for pixels not flagged in the DQ array of the model.
         Pixels flagged as "bad" in the DQ array will have thier weights
         set to 0.
+
 
     good_bits : int, str, None, optional
         An integer bit mask, `None`, a Python list of bit flags, a comma-,
@@ -129,8 +131,7 @@ def build_driz_weight(model, weight_type=None, good_bits=None, flag_name_map=Non
 
     else:
         raise ValueError(
-            f"Invalid weight type: {repr(weight_type)}."
-            "Allowed weight types are 'ivm', 'exptime', or None."
+            f"Invalid weight type: {repr(weight_type)}.Allowed weight types are 'ivm', 'exptime', or None."
         )
 
     return result.astype(np.float32)
